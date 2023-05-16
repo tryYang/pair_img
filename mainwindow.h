@@ -6,6 +6,9 @@
 #include<QGraphicsPixmapItem>
 #include<QGraphicsScene>
 #include<QMessageBox>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include<QDebug>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -35,6 +38,7 @@ public:
 
     void img_show(QGraphicsScene * scene,const QString type,int index);
     void init();
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
     void on_btnCbUp_clicked();
@@ -50,7 +54,8 @@ private slots:
     void on_btn_pair_clicked();
 
 private:
-    QList<QFileInfo> files;
+    QList<QFileInfo> cbfiles;
+    QList<QFileInfo> ctfiles;
     Ui::MainWindow *ui;
     Setting set;
     QString cbview_dir;
@@ -61,6 +66,8 @@ private:
     int ctindex=0;
     QList<QGraphicsPixmapItem*> ctpixmaps;
     QList<QGraphicsPixmapItem*> cbpixmaps;
+    QList<QString> cbfilename;
+    QList<QString> ctfilename;
     QGraphicsScene *ctscene=new QGraphicsScene;
     QGraphicsScene *cbscene=new QGraphicsScene;
 };

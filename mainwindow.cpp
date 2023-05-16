@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 //    ui->ct_img->show();
 //    ui->cbct_img->show();
+    ui->cbct_img->installEventFilter(this);
+    ui->ct_img->installEventFilter(this);
     this->show();
 
 }
@@ -75,6 +77,8 @@ void MainWindow::viewinit()
 {
     ctpixmaps.clear();
     cbpixmaps.clear();
+    cbfilename.clear();
+    ctfilename.clear();
     cbview_dir = set.getCb_path();
     ctview_dir = set.getCt_path();
     cbsave_dir = set.getCb_savepath();
@@ -83,23 +87,25 @@ void MainWindow::viewinit()
     QDir ctdir(ctview_dir);
     ctdir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     ctdir.setNameFilters(QStringList() << "*.bmp");
-    QList<QFileInfo> ctfiles = ctdir.entryInfoList();
+    ctfiles = ctdir.entryInfoList();
 
     for (int i = 0; i < ctfiles.count(); i++) {
         QPixmap pixmap(ctfiles[i].absoluteFilePath());
         QGraphicsPixmapItem* pixmapItem = new QGraphicsPixmapItem(pixmap);
         ctpixmaps.append(pixmapItem);
+//        ctfilename.append(files[i].fileName());
     }
 
     QDir dir(cbview_dir);
     dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     dir.setNameFilters(QStringList() << "*.bmp");
-    files = dir.entryInfoList();
+    cbfiles = dir.entryInfoList();
 
-    for (int i = 0; i < files.count(); i++) {
-        QPixmap pixmap(files[i].absoluteFilePath());
+    for (int i = 0; i < cbfiles.count(); i++) {
+        QPixmap pixmap(cbfiles[i].absoluteFilePath());
         QGraphicsPixmapItem* pixmapItem = new QGraphicsPixmapItem(pixmap);
         cbpixmaps.append(pixmapItem);
+//        cbfilename.append(files[i].fileName());
     }
     init();
     img_show(cbscene,"cb",cbindex);
@@ -115,12 +121,16 @@ void MainWindow::img_show(QGraphicsScene *  scene, const QString type,  int inde
         if(cbpixmaps[index]->scene()!=nullptr)
             scene->removeItem(cbpixmaps[index]);
         scene->addItem(cbpixmaps[index]);
+
+         ui->lb_cb->setText("文件名："+cbfiles[index].fileName());
 //        ui->cbct_img->show();
     }
     else{
         if(ctpixmaps[index]->scene()!=nullptr)
             scene->removeItem(ctpixmaps[index]);
       scene->addItem(ctpixmaps[index]);
+
+      ui->lb_ct->setText("文件名："+ctfiles[index].fileName());
 //         ui->ct_img->show();
     }
 //    if(type =="cb"){
@@ -136,6 +146,35 @@ void MainWindow::init()
 {
     cbindex=0;
     ctindex=0;
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress)
+           {
+               QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+               if(obj==ui->cbct_img){
+                   if (keyEvent->key() == Qt::Key_Right){
+                       ui->btnCbDown->click();
+                   }
+                   else if(keyEvent->key() == Qt::Key_Left){
+                       ui->btnCbUp->click();
+                   }
+               }
+               if(obj==ui->ct_img){
+                  if (keyEvent->key() == Qt::Key_Right){
+
+                      ui->btnCtDown->click();
+                  }
+                  else if(keyEvent->key() == Qt::Key_Left){
+                        ui->btnCtUp->click();
+                   }
+               }
+
+           }
+
+
+           return QMainWindow::eventFilter(obj, event);
 }
 
 
@@ -214,12 +253,12 @@ void MainWindow::on_btn_pair_clicked()
     } else {
         qDebug() << "文件夹创建失败：" << cbsave_dir;
     }
-    QFile sourceFile1(files[cbindex].absoluteFilePath());
+    QFile sourceFile1(cbfiles[cbindex].absoluteFilePath());
     QFileInfo fileInfo1(sourceFile1);
     QString fileName1 = fileInfo1.completeBaseName();  // 获取文件名
 
     bool success1 = sourceFile1.copy(cbsave_dir +  fileName1+".bmp");
-    QFile sourceFile2(files[ctindex].absoluteFilePath());
+    QFile sourceFile2(ctfiles[ctindex].absoluteFilePath());
     QFileInfo fileInfo2(sourceFile2);
     QString fileName2 = fileInfo2.completeBaseName();  // 获取文件名
 
